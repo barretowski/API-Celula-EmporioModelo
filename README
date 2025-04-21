@@ -1,0 +1,226 @@
+# **API de Microservices - Arquitetura de Células com FastAPI**
+
+Este projeto é uma **API** baseada na **arquitetura de células**, onde cada **célula** é responsável por uma parte específica da aplicação. Cada célula é um microserviço com FastAPI e comunicação entre células via APIs. O projeto é modular, e você pode adicionar novas células à medida que o sistema cresce.
+
+### **Arquitetura de Células**
+- **Produto**: Gerenciamento de produtos.
+- **Usuário**: Gerenciamento de usuários.
+- **Cliente**: Gerenciamento de clientes (futuro).
+- **Compras**: Gerenciamento de Compras (futuro).
+- **Vendas**: Gerenciamento de Vendas (futuro).
+- **Financeiro**: Gerenciamento Financeiro (futuro).
+- **Outras células**: A estrutura permite adicionar novas células conforme necessário.
+
+---
+
+## **Pré-requisitos**
+
+Antes de rodar o projeto, verifique se você tem os seguintes pré-requisitos:
+
+- Python 3.8 ou superior
+- Pip (gerenciador de pacotes do Python)
+- Banco de dados (SQLite para desenvolvimento ou PostgreSQL para produção)
+
+---
+
+## **Instalação e Configuração Inicial**
+
+### 1. **Clone o repositório**
+
+Clone o repositório para a sua máquina local:
+
+```bash
+git clone https://github.com/seuusuario/seu-repositorio.git
+cd seu-repositorio
+```
+
+### 2. **Crie e ative o ambiente virtual**
+
+Recomendamos a criação de um ambiente virtual para o projeto. Aqui estão os comandos para criar o ambiente virtual com `venv`:
+
+```bash
+# No Windows
+python -m venv venv
+venv\Scripts\activate
+
+# No macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. **Instale as dependências**
+
+Instale as dependências do projeto via `pip`:
+
+```bash
+pip install -r requirements.txt
+```
+
+Se não houver um `requirements.txt`, você pode instalar os pacotes diretamente com:
+
+```bash
+pip install fastapi uvicorn sqlalchemy pydantic
+```
+
+### 4. **Configure o banco de dados**
+
+No arquivo `database.py`, você pode configurar o banco de dados que deseja usar. Aqui está um exemplo para **SQLite**:
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "sqlite:///./test.db"  # Para PostgreSQL, altere para: "postgresql://usuario:senha@localhost/dbname"
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # Para SQLite
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+```
+
+Se estiver usando **PostgreSQL**, modifique a URL para o formato adequado.
+
+### 5. **Crie as tabelas no banco de dados**
+
+Execute o seguinte código para criar as tabelas no banco de dados:
+
+```python
+from database import Base, engine
+from models import Produto, Usuario  # Importe os modelos das células
+
+Base.metadata.create_all(bind=engine)
+```
+
+### 6. **Inicie o servidor**
+
+Agora você pode iniciar o servidor FastAPI com Uvicorn:
+
+```bash
+uvicorn main:app --reload
+```
+
+Onde:
+- `main` é o nome do arquivo onde a variável `app` está definida.
+- `--reload` faz o servidor reiniciar automaticamente ao modificar o código (para desenvolvimento).
+
+### 7. **Acesse a documentação da API**
+
+Com o servidor rodando, você pode acessar a documentação interativa da API via **Swagger UI**:
+
+```
+http://localhost:8000/docs
+```
+
+Ou via **Redoc**:
+
+```
+http://localhost:8000/redoc
+```
+
+---
+
+## **Estrutura de Diretórios**
+
+O projeto segue uma arquitetura de múltiplas células, onde cada célula é uma parte independente do sistema. Aqui está a estrutura do projeto:
+
+```
+/seu-repositorio
+│
+├── main.py               # Arquivo principal do FastAPI, onde a variável `app` é criada
+├── database.py           # Configuração do banco de dados
+├── models                # Pasta com os modelos SQLAlchemy de cada célula
+│   ├── modelProduto.py   # Modelo de produto
+│   └── modelUsuario.py   # Modelo de usuário
+├── routes                # Pasta com as rotas da API de cada célula
+│   ├── routeProduto.py   # Rotas relacionadas aos produtos
+│   └── routeUsuario.py   # Rotas relacionadas aos usuários
+├── schemas               # Pasta com os schemas Pydantic para validação de dados
+│   ├── produto.py        # Schema Pydantic para produto
+│   └── usuario.py        # Schema Pydantic para usuário
+├── requirements.txt      # Dependências do projeto
+└── config                # Arquivos de configuração (ex.: variáveis de ambiente)
+```
+
+Cada **célula** é uma pasta com:
+- **Modelos** SQLAlchemy (`models`)
+- **Rotas** FastAPI (`routes`)
+- **Schemas** Pydantic (`schemas`)
+
+---
+
+## **Exemplo de Endpoints**
+
+### **Produto - Criar Produto (POST)**
+
+```python
+@app.post("/produtos/", response_model=ProdutoResponse)
+def criar_produto(produto: ProdutoBase):
+    db_produto = Produto(**produto.dict())
+    db.add(db_produto)
+    db.commit()
+    db.refresh(db_produto)
+    return db_produto
+```
+
+### **Produto - Listar Produtos (GET)**
+
+```python
+@app.get("/produtos/", response_model=List[ProdutoResponse])
+def listar_produtos():
+    produtos = db.query(Produto).all()
+    return produtos
+```
+
+### **Usuário - Criar Usuário (POST)**
+
+```python
+@app.post("/usuarios/", response_model=UsuarioResponse)
+def criar_usuario(usuario: UsuarioCreate):
+    db_usuario = Usuario(**usuario.dict())
+    db.add(db_usuario)
+    db.commit()
+    db.refresh(db_usuario)
+    return db_usuario
+```
+
+### **Usuário - Listar Usuários (GET)**
+
+```python
+@app.get("/usuarios/", response_model=List[UsuarioResponse])
+def listar_usuarios():
+    usuarios = db.query(Usuario).all()
+    return usuarios
+```
+
+---
+
+## **Adicionando Novas Células**
+
+Para adicionar novas células (por exemplo, **Categoria**, **Pedidos**, **Estoque**, etc.), basta seguir a estrutura do projeto:
+- Crie o **modelo SQLAlchemy** na pasta `models`.
+- Adicione as **rotas** na pasta `routes`.
+- Defina os **schemas** de entrada/saída na pasta `schemas`.
+
+---
+
+## **Contribuindo**
+
+Se você deseja contribuir para o projeto, sinta-se à vontade para:
+1. Fazer um fork do repositório.
+2. Criar uma branch para suas alterações.
+3. Enviar um pull request.
+
+---
+
+## **Licença**
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+### **Notas Finais**
+- O projeto foi estruturado para ser facilmente escalável e modular. Você pode adicionar novas células ou até mesmo fazer deploy de células separadas para diferentes microserviços conforme a necessidade.
+- A comunicação entre as células pode ser feita por meio de **APIs REST** ou até mesmo **eventos assíncronos** (usando algo como **Celery** ou **RabbitMQ**), dependendo da arquitetura desejada.
+
+Se tiver mais dúvidas ou quiser explorar alguma parte do processo, é só avisar!
