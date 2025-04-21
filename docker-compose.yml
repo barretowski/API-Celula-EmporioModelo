@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  produto:
+    build: ./app/produto
+    container_name: produto_service
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./app/logs/produto:/app/logs
+    env_file:
+      - .env
+
+  usuario:
+    build: ./app/usuario
+    container_name: usuario_service
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./app/logs/usuario:/app/logs
+    env_file:
+      - .env
