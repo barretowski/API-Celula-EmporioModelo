@@ -34,7 +34,6 @@ def inserir_produto(produto: ProdutoBase, db: Session = Depends(get_db)):
 def obter_produtos(db: Session = Depends(get_db)):
     try:
         produtos = db.query(Produto).all()
-        logger.info(f"Lista de produtos retornada com sucesso. Total: {len(produtos)} produtos.")
         return produtos
     except Exception as e:
         logger.error(f"Erro ao obter produtos: {e}")
@@ -44,10 +43,8 @@ def obter_produtos(db: Session = Depends(get_db)):
 def obter_produto(produto_id: int, db: Session = Depends(get_db)):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:
-        logger.warning(f"Produto com ID {produto_id} não encontrado.")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     
-    logger.info(f"Produto com ID {produto_id} obtido com sucesso.")
     return produto
 
 @router.put("/alterar/{produto_id}/", response_model=ProdutoResponse)

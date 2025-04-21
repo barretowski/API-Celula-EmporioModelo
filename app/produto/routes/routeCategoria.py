@@ -39,7 +39,6 @@ def obter_categoria(categoria_id: int, db: Session = Depends(get_db)):
         logger.warning(f"Categoria com ID {categoria_id} não encontrada.")
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
     
-    logger.info(f"Categoria com ID {categoria_id} obtida com sucesso.")
     return categoria
 
 @router.put("/alterar/{categoria_id}/", response_model=CategoriaResponse)
