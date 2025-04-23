@@ -1,19 +1,25 @@
+version: '3.8'
+
 services:
-  produto:
-    build: ./app/produto
+  produto-service:
+    build:
+      context: ./api-service/app/produto   # Caminho para o diretório onde está o código do backend de produto
+      dockerfile: Dockerfile               # Nome do Dockerfile para o backend
     container_name: produto_service
     ports:
-      - "8001:8000"
+      - "8001:8000"                       # Mapeamento de porta do serviço de produto
     volumes:
       - ./app/logs/produto:/app/logs
     env_file:
       - .env
 
-  usuario:
-    build: ./app/usuario
+  usuario-service:
+    build:
+      context: ./api-service/app/usuario   # Caminho para o diretório onde está o código do backend de usuário
+      dockerfile: Dockerfile               # Nome do Dockerfile para o backend
     container_name: usuario_service
     ports:
-      - "8002:8000"
+      - "8002:8000"                       # Mapeamento de porta do serviço de usuário
     volumes:
       - ./app/logs/usuario:/app/logs
     env_file:
