@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, EmailStr
+from pydantic import BaseModel
 
 class CategoriaBase(BaseModel):
     descricao: str
