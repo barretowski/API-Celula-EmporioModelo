@@ -10,6 +10,9 @@
 </template>
 
 <script>
+import { useUserStore } from '../stores/usuarioStore';
+import api from '../axios';
+
 export default {
   data() {
     return {
@@ -18,8 +21,20 @@ export default {
     };
   },
   methods: {
-    submitLogin() {
-      console.log('Login submitted:', this.email, this.password);
+    async submitLogin() {
+      try {
+        const response = await api.post('/login', {
+          email: this.email,
+          password: this.password
+        });
+
+        const userStore = useUserStore();
+        userStore.setUser(response.data);
+
+        this.$router.push({ name: 'Home' });
+      } catch (error) {
+        console.error('Erro ao fazer login', error);
+      }
     }
   }
 };
